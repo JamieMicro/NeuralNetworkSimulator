@@ -38,6 +38,9 @@ NETWORK_SPEED = 0.01
 global NETWORK_ACTIVE
 NETWORK_ACTIVE = False
 
+global NETWORK_RESET
+NETWORK_RESET = False
+
 global NETWORK_ACTIVATIONS
 NETWORK_ACTIVATIONS = {}
 
@@ -46,9 +49,6 @@ NETWORK_TENSORS = {}
 
 global NEURONS
 NEURONS = []
-
-global INPUT_BOXES
-INPUT_BOXES = []
 
 global CURRENT_NUM_LAYERS
 global CURRENT_NUM_NEURONS_INPUT
@@ -82,30 +82,6 @@ def convert_display_speed_to_delay(speed):
 
 def convert_delay_to_display_speed(delay):
     return int(delay * cfg.MAX_SPEED)
-
-
-class Blob:
-    def __init__(self, color):
-        self.x = random.randrange(0, WIDTH)
-        self.y = random.randrange(0, HEIGHT)
-        self.size = random.randrange(4, 8)
-        self.color = color
-
-    def move(self):
-        self.move_x = random.randrange(-1, 2)
-        self.move_y = random.randrange(-1, 2)
-        self.x += self.move_x
-        self.y += self.move_y
-
-        if self.x < 0:
-            self.x = 0
-        elif self.x > WIDTH:
-            self.x = WIDTH
-
-        if self.y < 0:
-            self.y = 0
-        elif self.y > HEIGHT:
-            self.y = HEIGHT
 
 
 class Neuron:
@@ -166,6 +142,9 @@ def draw_controls():
 
     # Start training button
     refresh_start_training_button()
+
+    # Reset network button
+    refresh_reset_network_button()
 
     # Layers input box
     refresh_layers_input_box('3')
@@ -410,8 +389,55 @@ def refresh_build_network_button():
 
     game_display.blit(text_surface_obj, text_rect_obj)
 
+    global NETWORK_ACTIVE
     if button_click:
-        build_network()
+        if not NETWORK_ACTIVE:
+            build_network()
+            NETWORK_ACTIVE = True
+        else:
+            refresh_message_box_bottom(text="Please click reset to build and train a new network")
+
+
+def refresh_reset_network_button():
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+
+    x = cfg.BUTTON_RESET_NETWORK_X
+    y = cfg.BUTTON_RESET_NETWORK_Y
+    w = cfg.BUTTON_WIDTH
+    h = cfg.BUTTON_HEIGHT
+
+    button_color = BLUE
+    button_click = False
+
+    # Check build network
+    if x + w > mouse[0] > x and y + h > mouse[1] > y:
+        button_color = LIGHT_SILVER
+
+        if click[0] == 1:
+            button_click = True
+    else:
+        button_color = BLUE
+
+    # Draw button
+    pygame.draw.rect(game_display, button_color, (x, y, w, h))
+
+    # Draw text
+    font = pygame.font.Font(cfg.BUTTON_FONT, cfg.BUTTON_FONT_SIZE)
+    text_surface_obj = font.render('Reset', True, BLACK, button_color)
+    text_rect_obj = text_surface_obj.get_rect()
+    text_rect_obj.center = (x + (w // 2), y + (h // 2))
+
+    game_display.blit(text_surface_obj, text_rect_obj)
+
+    global NETWORK_RESET
+    global NETWORK_ACTIVE
+    if button_click and not NETWORK_RESET and NETWORK_ACTIVE:
+        NETWORK_RESET = True
+        reset_environment()
+        NETWORK_ACTIVE = False
+    else:
+        NETWORK_RESET = False
 
 
 def refresh_start_training_button():
@@ -1274,6 +1300,7 @@ class InputBox:
 def check_controls():
     refresh_build_network_button()
     refresh_start_training_button()
+    refresh_reset_network_button()
     refresh_increment_layers_tick_button()
     refresh_decrement_layers_tick_button()
     refresh_increment_input_tick_button()
@@ -1608,6 +1635,29 @@ def start_training():
         refresh_message_box_bottom(text='Training Finished')
     else:
         refresh_message_box_top(text='Network is not ready, please build network before training...')
+
+
+def reset_environment():
+    global NETWORK_ACTIVATIONS
+    NETWORK_ACTIVATIONS = {}
+
+    global NETWORK_TENSORS
+    NETWORK_TENSORS = {}
+
+    global NEURONS
+    NEURONS = []
+
+    global CURRENT_NUM_LAYERS
+    CURRENT_NUM_LAYERS = cfg.DEFAULT_NETWORK_LAYERS
+    global CURRENT_NUM_NEURONS_INPUT
+    CURRENT_NUM_NEURONS_INPUT = cfg.DEFAULT_NETWORK_INPUTS
+    global CURRENT_NUM_NEURONS_HIDDEN
+    CURRENT_NUM_NEURONS_HIDDEN = cfg.DEFAULT_NETWORK_HIDDEN
+    global CURRENT_NUM_NEURONS_OUTPUT
+    CURRENT_NUM_NEURONS_OUTPUT = cfg.DEFAULT_NETWORK_OUTPUTS
+
+    game_display.fill(BLACK)
+    draw_controls()
 
 
 def main():
