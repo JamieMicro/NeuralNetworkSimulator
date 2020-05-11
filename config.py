@@ -24,10 +24,12 @@ TRAINING_DATA_FILE = ext_cfg['Training']['training_data']
 NUM_EPOCHS = int(ext_cfg['Training']['epochs'])
 LEARNING_RATE = float(ext_cfg['Training']['learning_rate'])
 MIN_LAYERS = 3
-MAX_LAYERS = 5
+MAX_LAYERS = 9
 MAX_NEURONS = 9
 MIN_NEURONS = 1
 MAX_SPEED = 100
+MIN_OUTPUTS = 1
+MAX_OUTPUTS = 1
 
 # Default network
 DEFAULT_NETWORK_LAYERS = 3

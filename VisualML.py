@@ -8,17 +8,17 @@ import csv
 import configparser
 
 
-ext_cfg = configparser.ConfigParser()
-ext_cfg.read('config.cfg')
+user_cfg = configparser.ConfigParser()
+user_cfg.read('config.cfg')
 
 pygame.init()
 
-TRAINING_DATA_FILE = ext_cfg['Training']['training_data']
-WIDTH = int(ext_cfg['Display']['width'])
-HEIGHT = int(ext_cfg['Display']['height'])
+TRAINING_DATA_FILE = user_cfg['Training']['training_data']
+WIDTH = int(user_cfg['Display']['width'])
+HEIGHT = int(user_cfg['Display']['height'])
 
-NUM_EPOCHS = int(ext_cfg['Training']['epochs'])
-LEARNING_RATE = float(ext_cfg['Training']['learning_rate'])
+NUM_EPOCHS = int(user_cfg['Training']['epochs'])
+LEARNING_RATE = float(user_cfg['Training']['learning_rate'])
 
 WHITE = cfg.WHITE
 BLUE = cfg.BLUE
@@ -925,8 +925,8 @@ def decrement_hidden():
 def increment_output():
     global CURRENT_NUM_NEURONS_OUTPUT
     new_num = int(CURRENT_NUM_NEURONS_OUTPUT) + 1
-    if new_num > cfg.MAX_NEURONS:
-        new_num = int(cfg.MAX_NEURONS)
+    if new_num > cfg.MAX_OUTPUTS:
+        new_num = int(cfg.MAX_OUTPUTS)
 
     refresh_output_layer_input_box(str(new_num))
 
@@ -934,8 +934,8 @@ def increment_output():
 def decrement_output():
     global CURRENT_NUM_NEURONS_OUTPUT
     new_num = int(CURRENT_NUM_NEURONS_OUTPUT) - 1
-    if new_num < cfg.MIN_NEURONS:
-        new_num = int(cfg.MIN_NEURONS)
+    if new_num < cfg.MIN_OUTPUTS:
+        new_num = int(cfg.MIN_OUTPUTS)
 
     refresh_output_layer_input_box(str(new_num))
 
@@ -1234,67 +1234,6 @@ def draw_button(msg, x, y, w, h, ic, ac, action=None):
     textRect = textSurf.get_rect()
     textRect.center = ((x+(w/2)), (y+(h/2)))
     game_display.blit(textSurf, textRect)
-
-
-class InputBox:
-    def __init__(self, x, y, w, h, text='', label=''):
-        self.rect = pygame.Rect(x, y, w, h)
-        self.color = SILVER
-        self.text = text
-        self.FONT = pygame.font.Font(None, 32)
-        self.txt_surface = self.FONT.render(text, True, self.color)
-        self.active = False
-        self.COLOR_ACTIVE = LIGHT_SILVER
-        self.COLOR_INACTIVE = SILVER
-        self.label = label
-        self.x = x
-        self.y = y
-        self.w = w
-        self.h = h
-
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONUP:
-            # If the user clicked on the input_box rect.
-            if self.rect.collidepoint(event.pos):
-                # Toggle the active variable.
-                self.active = not self.active
-            else:
-                self.active = False
-            # Change the current color of the input box.
-            self.color = self.COLOR_ACTIVE if self.active else self.COLOR_INACTIVE
-        if event.type == pygame.KEYDOWN:
-            if self.active:
-                if event.key == pygame.K_RETURN:
-                    print(self.text)
-                    self.text = ''
-                elif event.key == pygame.K_BACKSPACE:
-                    self.text = self.text[:-1]
-                else:
-                    self.text += event.unicode
-                # Re-render the text
-                    self.txt_surface = self.FONT.render(self.text, True, self.color)
-
-    def update(self):
-        # Resize the box if the text is too long.
-        width = max(30, self.txt_surface.get_width()+10)
-        self.rect.w = width
-
-    def update_text(self):
-        self.txt_surface = self.FONT.render(self.text, True, self.color)
-
-    def draw_label(self, text):
-        smallText = pygame.font.SysFont(cfg.BUTTON_FONT, cfg.BUTTON_FONT_SIZE)
-        textSurf = smallText.render(text, True, BLACK, WHITE)
-        textRect = textSurf.get_rect()
-        textRect.center = ((self.x + (self.w))-(len(text) * 8), (self.y + (self.h / 2)))
-        game_display.blit(textSurf, textRect)
-
-    def draw(self, screen):
-        # Blit the text.
-        screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
-        # Blit the rect.
-        pygame.draw.rect(game_display, self.color, self.rect, 2)
-        self.draw_label(text=self.label)
 
 
 def check_controls():
